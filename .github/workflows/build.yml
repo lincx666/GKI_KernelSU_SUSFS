@@ -251,8 +251,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          f="$GITHUB_WORKSPACE/KernelSU/kernel/Kbuild"
-          [ -f "$f" ] || { echo "ERROR: $f not found" >&2; exit 1; }
+          f="$(find "$GITHUB_WORKSPACE/kernel" -type f -path '*/KernelSU/kernel/Kbuild' -print -quit)"
+          [ -n "$f" ] && [ -f "$f" ] || { echo "ERROR: KernelSU Kbuild not found under $GITHUB_WORKSPACE/kernel" >&2; exit 1; }
+          echo "[+] patching $f"
           sed -i -E 's/^([[:space:]]*)KSU_EXPECTED_SIZE[[:space:]]*[?:+]?=.*/\1KSU_EXPECTED_SIZE ?= 0x0339/' "$f"
           sed -i -E 's/^([[:space:]]*)KSU_EXPECTED_HASH[[:space:]]*[?:+]?=.*/\1KSU_EXPECTED_HASH ?= 627451eeec41f171518af1010c1621008ccdcb04bf7b04622ad1195c4c020ca9/' "$f"
           grep -q '0x0339' "$f"
