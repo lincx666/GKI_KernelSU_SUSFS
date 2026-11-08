@@ -245,6 +245,20 @@ jobs:
           flavor: ${{ inputs.root_flavor }}
           commit: ${{ inputs.root_commit }}
 
+      - name: XiaoCong manager signature
+        # 小葱KSU：把 KernelSU 的信任证书换成小葱证书（0x0339 / 627451ee…）
+        if: inputs.root_flavor == 'kernelsu'
+        shell: bash
+        run: |
+          set -euo pipefail
+          f="$GITHUB_WORKSPACE/KernelSU/kernel/Kbuild"
+          [ -f "$f" ] || { echo "ERROR: $f not found" >&2; exit 1; }
+          sed -i -E 's/^([[:space:]]*)KSU_EXPECTED_SIZE[[:space:]]*[?:+]?=.*/\1KSU_EXPECTED_SIZE ?= 0x0339/' "$f"
+          sed -i -E 's/^([[:space:]]*)KSU_EXPECTED_HASH[[:space:]]*[?:+]?=.*/\1KSU_EXPECTED_HASH ?= 627451eeec41f171518af1010c1621008ccdcb04bf7b04622ad1195c4c020ca9/' "$f"
+          grep -q '0x0339' "$f"
+          grep -q '627451eeec41f171518af1010c1621008ccdcb04bf7b04622ad1195c4c020ca9' "$f"
+          echo "[+] XiaoCong manager signature applied"
+
       - name: Mark No Root build metadata
         if: inputs.root_flavor == 'none'
         shell: bash
